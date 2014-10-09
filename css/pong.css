@@ -1,0 +1,11 @@
+#canvas {
+    z-index:2;
+    position:absolute;
+    top:0px;
+    left:0px;
+}
+
+.masthead.clearfix {
+    position:absolute;
+    z-index:3;
+}

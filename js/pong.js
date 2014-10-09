@@ -6,7 +6,6 @@ var offset = 10;
 var voffset = 10;
 var counter = 0;
 
-
 var speed = 1
 var velocity = []
 velocity.push(speed * (.5*Math.random()+.5))
@@ -18,20 +17,10 @@ if (Math.random() > .5) {
     velocity[1] = -1*velocity[1];
 }
 
-console.log(velocity);
-
-
 $(canvas).appendTo('.site-wrapper-inner')
     .attr('id','canvas')
     .attr('width',$(window).width())
-    .attr('height',$(window).height())
-    .css('z-index','2')
-    .css('position','absolute')
-    .css('top','0px')
-    .css('left','0px');
-$('.masthead.clearfix')
-    .css('position', 'absolute')
-    .css('z-index','3');
+    .attr('height',$(window).height());
 
 var pressed = [false, false, false, false];
 
@@ -121,7 +110,7 @@ CanvasState.prototype.draw = function() {
         }
     }
     var ball = this.shapes[this.shapes.length-1];
-    if (ball.y <= 0 || ball.y >= $(window).height()) {
+    if (ball.y <= 0 || ball.y+ballWidth >= $(window).height()) {
         velocity[1] = -1*velocity[1];
     }
     var leftBorder = offset+paddleWidth;
