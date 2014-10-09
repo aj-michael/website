@@ -1,8 +1,12 @@
+var paddleWidth = 30;
+var paddleHeight = 150;
+var offset = 20;
+
 $(canvas).appendTo('.site-wrapper-inner')
     .attr('id','canvas')
     .attr('width',$(window).width())
     .attr('height',$(window).height())
-    .css('border','1px solid red')
+    //.css('border','1px solid red')
     .css('z-index','2')
     .css('position','absolute')
     .css('top','0px')
@@ -11,6 +15,7 @@ $('.masthead.clearfix')
     .css('position', 'absolute')
     .css('z-index','3');
 
+var pressed = [false, false, false, false];
 
 function Shape(x,y,w,h) {
     this.x = x;
@@ -21,7 +26,6 @@ function Shape(x,y,w,h) {
 }
 
 Shape.prototype.draw = function(ctx) {
-    console.log("attmpteing to draw");
     ctx.fillStyle = this.fill;
     ctx.fillRect(this.x,this.y,this.w,this.h);
 }
@@ -31,42 +35,77 @@ function CanvasState(canvas) {
     this.width = canvas.width;
     this.height = canvas.height;
     this.ctx = canvas.getContext('2d');
-    this.valid = false;
     this.shapes = [];
     var state = this;
     $(document).keydown(function(e) {
+        state.valid = false;
         switch(e.which) {
             case 87:    //w
-                console.log('you pressed w');
-                this.
+                pressed[0] = true;
+                break;
+            case 83:    //s
+                pressed[1] = true;
+                break;
+            case 38:    //up
+                pressed[2] = true;
+                break;
+            case 40:    //down
+                pressed[3] = true;
                 break;
             default:
+                state.valid = true;
                 return;
         }
         e.preventDefault();
     });
     $(document).keyup(function(e) {
-        console.log("you just released " + e.which);
+        switch(e.which) {
+            case 87:
+                pressed[0] = false;
+                break;
+            case 83:
+                pressed[1] = false;
+                break;
+            case 38:
+                pressed[2] = false;
+                break;
+            case 40:
+                pressed[3] = false; 
+                break;
+            default:
+                return;
+        }
     });
-    this.interval = 30;
+    this.interval = 10;
     setInterval(function() { state.draw(); }, state.interval);
 }
 
 CanvasState.prototype.draw = function() {
     if (!this.valid) {
+        if (pressed[0]) {
+            state.shapes[0].y = Math.max(state.shapes[0].y-4,0);
+        }
+        if (pressed[1]) {
+            state.shapes[0].y = Math.min(state.shapes[0].y+4,$('#canvas').height()-paddleHeight);
+        }
+        if (pressed[2]) {
+            state.shapes[1].y = Math.max(state.shapes[1].y-4,0);
+        }
+        if (pressed[3]) {
+            state.shapes[1].y = Math.min(state.shapes[1].y+4,$('#canvas').height()-paddleHeight);
+        }
+
         var ctx = this.ctx;
         var shapes = this.shapes;
         this.clear();
         for (var i = 0; i < shapes.length; i++) {
             shapes[i].draw(ctx);
         }
-        this.valid = true;
     }
 }
 
 CanvasState.prototype.addShape = function(shape) {
     this.shapes.push(shape);
-    this.valid = false;
 }
 
 CanvasState.prototype.clear = function() {
@@ -74,10 +113,6 @@ CanvasState.prototype.clear = function() {
 }
 
 
-
-var paddleWidth = 30;
-var paddleHeight = 150;
-var offset = 20;
 
 var leftStartingHeight = Math.floor((Math.random()*($(window).height()-paddleHeight)));
 var rightStartingHeight = Math.floor((Math.random()*($(window).height()-paddleHeight)));
