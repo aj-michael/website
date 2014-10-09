@@ -17,6 +17,9 @@ if (Math.random() > .5) {
     velocity[1] = -1*velocity[1];
 }
 
+var mode = 0;
+var turn = velocity[0] < 0 ? 0 : 1;
+
 $(canvas).appendTo('.site-wrapper-inner')
     .attr('id','canvas')
     .attr('width',$(window).width())
@@ -117,13 +120,53 @@ CanvasState.prototype.draw = function() {
     var rightBorder = $(window).width()-offset-paddleWidth;
     if (ball.x>leftBorder && ball.x+velocity[0]<leftBorder && ball.y+ballWidth>this.shapes[0].y && ball.y<this.shapes[0].y+paddleHeight) {
         velocity[0] = -1*velocity[0];
+        turn = (turn + 1) % 2;
     } else if (ball.x+ballWidth<rightBorder&&ball.x+ballWidth+velocity[0]>rightBorder&&ball.y+ballWidth>this.shapes[1].y&&ball.y<this.shapes[1].y+paddleHeight) {
         velocity[0] = -1*velocity[0];
+        turn = (turn + 1) % 2;
     }
     ball.x = ball.x + velocity[0];
     ball.y = ball.y + velocity[1];
     ball.draw(this.ctx);
     counter = (counter + 1) % 5;
+
+    
+    if (ball.x < -100 || ball.x > 100+$(window).width()) {
+        ball.x = Math.random()*$(window).width()
+        ball.y = Math.random()*$(window).height()
+        velocity = []
+        velocity.push(speed * (.5*Math.random()+.5))
+        velocity.push(Math.sqrt(speed*speed-velocity[0]*velocity[0]))
+        if (Math.random() > .5) {
+            velocity[0] = -1*velocity[0];
+        }
+        if (Math.random() > .5) {
+            velocity[1] = -1*velocity[1];
+        }
+        turn = velocity[0] < 0 ? 0 : 1;
+    }
+
+    if (mode < 2 && turn == 0) {
+        // moving left
+        var time = (ball.x-leftBorder)/(-1*velocity[0]);
+        var intersection = ball.y + velocity[1]*time;
+        if (intersection < state.shapes[0].y+paddleHeight/2+10) {
+            pressed = [true, false, false, false];
+        } else if (intersection > state.shapes[0].y+paddleHeight/2-10) {
+            pressed = [false,true,false,false];
+        }
+    } else if (mode == 0 && turn == 1) {
+        // moving right
+        var time = (rightBorder-ball.x-ballWidth)/velocity[0];
+        var intersection = ball.y+velocity[1]*time;
+        if (intersection < state.shapes[1].y+paddleHeight/2+10) {
+            pressed = [false,false,true,false];
+        } else if (intersection > state.shapes[1].y+paddleHeight/2-10) {
+            pressed = [false,false,false,true];
+        }
+    } 
+
+
 }
 
 CanvasState.prototype.addShape = function(shape) {
@@ -145,4 +188,24 @@ var initialBallX = Math.floor(Math.random()*$(window).width());
 var initialBallY = Math.floor(Math.random()*$(window).height());
 
 state.addShape(new Shape(initialBallX,initialBallY,ballWidth,ballWidth,"red"));
+
+
+$('#twoperson').click(function() {
+    mode = 2;
+    $('li #twoperson').parent().addClass('active');
+    $('li #oneperson').parent().removeClass('active');
+    $('li #noperson').parent().removeClass('active');
+});
+$('#oneperson').click(function() {
+    mode = 1;
+    $('li #oneperson').parent().addClass('active');
+    $('li #noperson').parent().removeClass('active');
+    $('li #twoperson').parent().removeClass('active');
+});
+$('#noperson').click(function() {
+    mode = 0;
+    $('li #oneperson').parent().removeClass('active');
+    $('li #noperson').parent().addClass('active');
+    $('li #twoperson').parent().removeClass('active');
+});
 
