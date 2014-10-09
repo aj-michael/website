@@ -1,70 +1,89 @@
-var canvas = '<canvas></canvas>';
-var rect = '<rect></rect>';
-
-var svgWidth = 50;
-var svgHeight = $(window).height();
-var paddleWidth = svgWidth;
-var paddleHeight = 100;
-var paddleColor = 'rgb(0,0,255)';
-var strokeColor = 'rgb(0,0,0)';
-
 $(canvas).appendTo('.site-wrapper-inner')
-    .attr('id','leftSide')
-    .attr('width',svgWidth)
-    .attr('height',svgHeight)
-    //.css('border','1px solid red')
-    .css('z-index','1000')
+    .attr('id','canvas')
+    .attr('width',$(window).width())
+    .attr('height',$(window).height())
+    .css('border','1px solid red')
+    .css('z-index','2')
     .css('position','absolute')
     .css('top','0px')
-    .css('left','5px');
+    .css('left','0px');
+$('.masthead.clearfix')
+    .css('position', 'absolute')
+    .css('z-index','3');
 
 
-$(canvas).appendTo('.site-wrapper-inner')
-    .attr('id','rightSide')
-    .attr('width',svgWidth)
-    .attr('height',svgHeight)
-    //.css('border','1px solid red')
-    .css('z-index','1000')
-    .css('position','absolute')
-    .css('top','0px')
-    .css('right','5px');
-
-drawPaddle($('#leftSide'),50);
-drawPaddle($('#leftSide'),300);
-drawPaddle($('#rightSide'),50);
-
-function drawPaddle(side,y) {
-    console.log(side)
-    var ctx = side[0].getContext("2d");
-    var x = side.position().left;
-    console.log(x);
-    ctx.beginPath();
-    ctx.rect(x,y,paddleWidth,paddleHeight);
-    ctx.setFillColor("white");
-    ctx.fill()
-    ctx.stroke();
+function Shape(x,y,w,h) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.fill = '#AAAAAA';
 }
 
-function movePaddle(paddle,direction) {
-
+Shape.prototype.draw = function(ctx) {
+    console.log("attmpteing to draw");
+    ctx.fillStyle = this.fill;
+    ctx.fillRect(this.x,this.y,this.w,this.h);
 }
 
-$(document).keydown(function(e) {
-    switch(e.which) {
-        case 87:    // w
-            console.log('you pressed w');
-            break;
-        case 83:    // s
-            console.log('you pressed s');
-            break;
-        case 38:    // up
-            console.log('you pressed up');
-            break;
-        case 40:    // down
-            console.log('you pressed down');
-            break;
-        default:
-            return;
+function CanvasState(canvas) {
+    this.canvas = canvas;
+    this.width = canvas.width;
+    this.height = canvas.height;
+    this.ctx = canvas.getContext('2d');
+    this.valid = false;
+    this.shapes = [];
+    var state = this;
+    $(document).keydown(function(e) {
+        switch(e.which) {
+            case 87:    //w
+                console.log('you pressed w');
+                this.
+                break;
+            default:
+                return;
+        }
+        e.preventDefault();
+    });
+    $(document).keyup(function(e) {
+        console.log("you just released " + e.which);
+    });
+    this.interval = 30;
+    setInterval(function() { state.draw(); }, state.interval);
+}
+
+CanvasState.prototype.draw = function() {
+    if (!this.valid) {
+        var ctx = this.ctx;
+        var shapes = this.shapes;
+        this.clear();
+        for (var i = 0; i < shapes.length; i++) {
+            shapes[i].draw(ctx);
+        }
+        this.valid = true;
     }
-    e.preventDefault();
-});
+}
+
+CanvasState.prototype.addShape = function(shape) {
+    this.shapes.push(shape);
+    this.valid = false;
+}
+
+CanvasState.prototype.clear = function() {
+    this.ctx.clearRect(0, 0, this.width, this.height);
+}
+
+
+
+var paddleWidth = 30;
+var paddleHeight = 150;
+var offset = 20;
+
+var leftStartingHeight = Math.floor((Math.random()*($(window).height()-paddleHeight)));
+var rightStartingHeight = Math.floor((Math.random()*($(window).height()-paddleHeight)));
+
+
+var state = new CanvasState(document.getElementById('canvas'));
+state.addShape(new Shape(offset,leftStartingHeight,paddleWidth,paddleHeight));
+state.addShape(new Shape($(window).width()-paddleWidth-offset,rightStartingHeight,paddleWidth,paddleHeight));
+
